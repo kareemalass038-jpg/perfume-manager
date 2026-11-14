@@ -1,0 +1,45 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'perfume_manager_mobile_build.zip'
+      - '.github/workflows/build-apk.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract project
+        run: |
+          unzip -q perfume_manager_mobile_build.zip -d work
+          cd work/perfume_manager
+          echo "PROJECT_DIR=$PWD" >> $GITHUB_ENV
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Prepare Android project
+        working-directory: work/perfume_manager
+        run: flutter create --platforms=android .
+
+      - name: Get dependencies
+        working-directory: work/perfume_manager
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: work/perfume_manager
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: perfume-manager-apk
+          path: work/perfume_manager/build/app/outputs/flutter-apk/app-release.apk
