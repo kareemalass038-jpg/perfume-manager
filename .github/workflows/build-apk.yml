@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'perfume_manager_mobile_build.zip'
+      - 'unzip -q perfume_manager_flutter_source.zip -d work'
       - '.github/workflows/build-apk.yml'
 
 jobs:
