@@ -17,8 +17,7 @@ jobs:
 
       - name: Extract project
         run: |
-          unzip -q perfume_manager_mobile_build.zip -d work
-          cd work/perfume_manager
+          unzip -q perfume_manager_flutter_source.zip -d work/perfume_manager
           echo "PROJECT_DIR=$PWD" >> $GITHUB_ENV
 
       - name: Setup Flutter
