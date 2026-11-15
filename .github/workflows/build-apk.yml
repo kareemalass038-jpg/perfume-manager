@@ -1,3 +1,4 @@
+
 name: Build Android APK
 
 on:
@@ -15,30 +16,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract project
+      - name: Extract and locate project
         run: |
-          unzip -q perfume_manager_flutter_source.zip -d work/perfume_manager
-          echo "PROJECT_DIR=$PWD" >> $GITHUB_ENV
+          unzip -q perfume_manager_flutter_source.zip -d work
+          PROJECT_DIR="$(find "$GITHUB_WORKSPACE/work" -type f -name pubspec.yaml -printf '%h\n' | head -n 1)"
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "ERROR: pubspec.yaml not found"
+            find work -maxdepth 4 -type f
+            exit 1
+          fi
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      - name: Prepare Android project
-        working-directory: work/perfume_manager
+      - name: Prepare Android
         run: flutter create --platforms=android .
+        working-directory: ${{ env.PROJECT_DIR }}
 
       - name: Get dependencies
-        working-directory: work/perfume_manager
         run: flutter pub get
+        working-directory: ${{ env.PROJECT_DIR }}
 
       - name: Build APK
-        working-directory: work/perfume_manager
         run: flutter build apk --release
+        working-directory: ${{ env.PROJECT_DIR }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: perfume-manager-apk
-          path: work/perfume_manager/build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ env.PROJECT_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+          
